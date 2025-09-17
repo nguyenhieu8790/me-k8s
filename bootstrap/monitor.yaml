@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: monitor-grafana
+  name: grafana
   namespace: argocd # Namespace where the Argo CD Application resource itself resides
   annotations:
     argocd.argoproj.io/manifest-generate-paths: /apps/grafana
