@@ -14,7 +14,7 @@ spec:
         prefix: "/status"
     route:
     - destination:
-        host: echo-server.dev.cluster.local
+        host: echo-server.dev.svc.cluster.local
         # subset: v2
   # - name: "reviews-v1-route"
   #   route:
