@@ -5,6 +5,7 @@ metadata:
   namespace: argocd # Namespace where the Argo CD Application resource itself resides
   annotations:
     argocd.argoproj.io/manifest-generate-paths: /apps/istio-base
+    argocd.argoproj.io/sync-wave: "1"
 spec:
   project: default # The Argo CD project this application belongs to
   source:
