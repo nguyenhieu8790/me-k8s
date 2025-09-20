@@ -1,0 +1,4 @@
+**/*.tgz
+**/base
+**/istiod
+**/gateway
