@@ -15,7 +15,7 @@ spec:
     route:
     - destination:
         host: echo-server.dev.svc.cluster.local
-        subset: v3
+        subset: v1
   # - name: "reviews-v1-route"
   #   route:
   #   - destination:
