@@ -1,10 +1,10 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: grafana
+  name: echo-server
   namespace: argocd # Namespace where the Argo CD Application resource itself resides
   annotations:
-    argocd.argoproj.io/manifest-generate-paths: /apps/grafana
+    argocd.argoproj.io/manifest-generate-paths: /apps/echo-server
 spec:
   project: default # The Argo CD project this application belongs to
   source:
