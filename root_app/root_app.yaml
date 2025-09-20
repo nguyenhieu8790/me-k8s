@@ -8,11 +8,10 @@ spec:
   source:
     repoURL: https://github.com/nguyenhieu8790/meme.git
     targetRevision: main
-    path: apps
+    path: bootstrap
     directory:
-      recurse: true
       include: '*.yaml'
-      exclude: '*.yml'
+      # exclude: '*.yml'
   destination:
     server: https://kubernetes.default.svc
     namespace: argocd
