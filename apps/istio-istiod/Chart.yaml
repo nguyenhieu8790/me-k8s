@@ -1,0 +1,12 @@
+apiVersion: v2
+name: istio-istiod
+description: A Helm chart for deploying cert-manager and related components
+type: application
+version: "1.27.1"
+appVersion: "1.27.1"
+
+dependencies:
+  - name: istio-istiod
+    version: "1.27.1"
+    alias: application
+    repository: "https://istio-release.storage.googleapis.com/charts"
