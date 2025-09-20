@@ -1,0 +1,23 @@
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: echoserver-vs
+spec:
+  hosts:
+  - echo.abc.com
+  gateways:
+  - echo-server
+  http:
+  - name: "all-echoserver"
+    match:
+    - uri:
+        prefix: "/status"
+    route:
+    - destination:
+        host: echo-server.dev.cluster.local
+        # subset: v2
+  # - name: "reviews-v1-route"
+  #   route:
+  #   - destination:
+  #       host: reviews.prod.svc.cluster.local
+  #       subset: v1
