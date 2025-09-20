@@ -7,7 +7,7 @@ metadata:
     argocd.argoproj.io/manifest-generate-paths: /apps/echo-server
 spec:
   project: default # The Argo CD project this application belongs to
-  source:
+  sources:
     - repoURL: https://github.com/nguyenhieu8790/meme.git # URL of the Git repository
       targetRevision: main # The branch or commit hash to use
       path: apps/echoserver1 # Path within the repository to the application's manifests
