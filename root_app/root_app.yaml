@@ -6,7 +6,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/your-org/your-gitops-repo.git
+    repoURL: https://github.com/nguyenhieu8790/meme.git
     targetRevision: main
     path: apps
     directory:
