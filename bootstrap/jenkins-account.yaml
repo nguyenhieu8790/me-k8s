@@ -1,10 +1,10 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: istio-echoserver
+  name: jenkins-controller-k8s
   namespace: argocd # Namespace where the Argo CD Application resource itself resides
   annotations:
-    argocd.argoproj.io/manifest-generate-paths: /apps/istio-echoserver
+    argocd.argoproj.io/manifest-generate-paths: /apps/jenkins-controller-k8s
   finalizers:
     - resources-finalizer.argocd.argoproj.io    
 spec:
@@ -12,14 +12,13 @@ spec:
   sources:
     - repoURL: https://github.com/nguyenhieu8790/meme.git # URL of the Git repository
       targetRevision: main # The branch or commit hash to use
-      path: apps/istio-echoserver # Path within the repository to the application's manifests      
-
+      path: apps/jenkins-controller-k8s # Path within the repository to the application's manifests
   destination:
     server: https://kubernetes.default.svc # URL of the target Kubernetes cluster
-    namespace: istio-ingress # Target namespace within the cluster for deployment
+    namespace: dev # Target namespace within the cluster for deployment
   syncPolicy:
     automated:
       prune: true # Automatically prune resources no longer defined in Git
       selfHeal: true # Automatically sync live state to desired state if drift occurs
     syncOptions:
-      - CreateNamespace=true # Automatically create the target namespace if it doesn't exist
+      - CreateNamespace=true # Automatically create the target namespace if it doesn't exist      

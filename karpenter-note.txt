@@ -1,0 +1,5 @@
+resource limit too small. k8s try to shedule on overloaded node. that resolve the issue. even make the issue wroser 
+ - pod limit
+ - incluse resource limit
+ - warm up
+ -

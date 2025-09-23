@@ -6,6 +6,8 @@ metadata:
   annotations:
     argocd.argoproj.io/manifest-generate-paths: /apps/istio-istiod
     argocd.argoproj.io/sync-wave: "2"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io    
 spec:
   project: default # The Argo CD project this application belongs to
   source:
