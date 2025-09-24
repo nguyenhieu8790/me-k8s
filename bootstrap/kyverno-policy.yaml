@@ -1,0 +1,25 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: kyverno-policy
+  namespace: argocd # Namespace where the Argo CD Application resource itself resides
+  annotations:
+    argocd.argoproj.io/manifest-generate-paths: /apps/kyverno-policy
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io    
+spec:
+  project: default # The Argo CD project this application belongs to
+  sources:
+    - repoURL: https://github.com/nguyenhieu8790/meme.git # URL of the Git repository
+      targetRevision: main # The branch or commit hash to use
+      path: apps/kyverno-policy # Path within the repository to the application's manifests
+  destination:
+    server: https://kubernetes.default.svc # URL of the target Kubernetes cluster
+    namespace: dev # Target namespace within the cluster for deployment
+  syncPolicy:
+    automated:
+      prune: true # Automatically prune resources no longer defined in Git
+      selfHeal: true # Automatically sync live state to desired state if drift occurs
+    syncOptions:
+      - CreateNamespace=true # Automatically create the target namespace if it doesn't exist
+      - ServerSideApply=true 

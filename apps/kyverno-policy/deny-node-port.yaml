@@ -1,0 +1,27 @@
+apiVersion: kyverno.io/v1
+kind: Policy
+metadata:
+  name: deny-service-type-nodeport
+  annotations:
+    policies.kyverno.io/title: Deny NodePort Service Type
+    policies.kyverno.io/category: Best Practices
+    policies.kyverno.io/severity: medium
+    policies.kyverno.io/subject: Service
+    policies.kyverno.io/description: >-
+      Services of type NodePort can expose applications on every node's IP address.
+      This may lead to security vulnerabilities if not properly managed.
+      This policy denies the creation of any Service with type NodePort.
+spec:
+  validationFailureAction: enforce
+  rules:
+  - name: validate-nodeport-service
+    match:
+      any:
+      - resources:
+          kinds:
+          - Service
+    validate:
+      message: "Creation of a Service with type NodePort is not allowed. Use ClusterIP or LoadBalancer instead."
+      pattern:
+        spec:
+          type: "!NodePort"
