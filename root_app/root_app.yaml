@@ -12,7 +12,7 @@ spec:
     targetRevision: main
     path: bootstrap
     directory:
-      include: 'argocd-cm.yaml,kyverno.yaml'
+      include: '*.yaml'
       exclude: 'no-use/*'
   destination:
     server: https://kubernetes.default.svc
