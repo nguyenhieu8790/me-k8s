@@ -12,7 +12,7 @@ metadata:
       This may lead to security vulnerabilities if not properly managed.
       This policy denies the creation of any Service with type NodePort.
 spec:
-  validationFailureAction: Audit
+  validationFailureAction: enforce
   rules:
   - name: validate-nodeport-service
     match:
