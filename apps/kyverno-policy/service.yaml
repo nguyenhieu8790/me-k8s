@@ -6,6 +6,7 @@ spec:
   type: ClusterIP
   selector:
     app: nginx
+    version: v1
   ports:
     - protocol: TCP
       port: 80 # Port exposed by the service within the cluster
