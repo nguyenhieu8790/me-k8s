@@ -1,0 +1,29 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: deny-non-argocd-service-changes
+spec:
+  validationFailureAction: Enforce
+  # background: false
+  rules:
+    - name: deny-create-or-update-not-from-argocd
+      match:
+        any:
+          - resources:
+              kinds:
+                - Service
+      preconditions:
+        all:
+          - key: "{{ request.operation }}"
+            operator: In
+            value:
+              - CREATE
+              - UPDATE
+      validate:
+        message: "❌ Only Argo CD is allowed to create or update Service resources."
+        deny:
+          conditions:
+            all:
+              - key: "{{ request.userInfo.username }}"
+                operator: NotEquals
+                value: "system:serviceaccount:argocd:argocd-application-controller"
