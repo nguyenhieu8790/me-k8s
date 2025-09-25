@@ -1,0 +1,32 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: log-service-update
+spec:
+  validationFailureAction: Audit
+  background: false
+  rules:
+    - name: log-service-update-event
+      match:
+        any:
+          - resources:
+              kinds:
+                - Service
+      preconditions:
+        all:
+          - key: "{{ request.operation }}"
+            operator: Equals
+            value: UPDATE
+      generate:
+        kind: Event
+        name: "service-update-{{ request.object.metadata.name | lower }}"
+        namespace: "{{ request.object.metadata.namespace }}"
+        synchronize: false
+        data:
+          reason: "ServiceUpdated"
+          message: "Service '{{ request.object.metadata.name }}' was updated by '{{ request.userInfo.username }}' using '{{ request.operation }}' action."
+          type: "Normal"
+          involvedObject:
+            apiVersion: v1
+            kind: Service
+            namespace: "{{ request.object.metadata.namespace }}"
