@@ -13,6 +13,8 @@ spec:
     - repoURL: https://github.com/nguyenhieu8790/meme.git # URL of the Git repository
       targetRevision: main # The branch or commit hash to use
       path: apps/kyverno-policy # Path within the repository to the application's manifests
+      directory:
+        include: '*.yaml'      
   destination:
     server: https://kubernetes.default.svc # URL of the target Kubernetes cluster
     namespace: dev # Target namespace within the cluster for deployment
