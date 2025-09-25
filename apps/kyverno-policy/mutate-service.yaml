@@ -16,9 +16,9 @@ spec:
       preconditions:
         all:
           # Check for the label on the resource being created/updated
-          - key: "{{ request.object.metadata.labels.\"type-to-change\" }}"
-            operator: Equals
-            value: "true"
+          # - key: "{{ request.object.metadata.labels.\"type-to-change\" }}"
+          #   operator: Equals
+          #   value: "true"
           # Check that the current type is ClusterIP
           - key: "{{ request.object.spec.type }}"
             operator: Equals

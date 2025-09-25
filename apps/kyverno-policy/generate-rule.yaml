@@ -1,0 +1,40 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: generate-app-config-on-service
+  annotations:
+    policies.kyverno.io/description: >-
+      When a Service with the label 'app.example.com/config-needed: "true"' is created,
+      this policy clones a standard ConfigMap from the 'config-templates' namespace
+      into the Service's namespace.
+spec:
+  rules:
+    - name: clone-standard-configmap
+      match:
+        resources:
+          kinds:
+            - Service
+          # Only trigger for Services with a specific label
+          selector:
+            matchLabels:
+              app.example.com/config-needed: "true"
+      # The 'generate' block defines the resource to be created
+      generate:
+        # The kind and name of the resource to be created
+        kind: ConfigMap
+        name: standard-app-config
+        # The target namespace for the new resource.
+        # Uses a Kyverno variable to get the namespace of the triggering Service.
+        namespace: "{{request.object.metadata.namespace}}"
+        
+        # 'synchronize: true' ensures that if the source ConfigMap changes,
+        # the generated copies will be updated, and if a user deletes the copy,
+        # Kyverno will re-create it.
+        synchronize: true
+        
+        # The 'clone' block specifies the source resource to copy from
+        clone:
+          # The source namespace
+          namespace: argocd
+          # The source ConfigMap name
+          name: argocd-rbac-cm
