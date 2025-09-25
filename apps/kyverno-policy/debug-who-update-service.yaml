@@ -18,8 +18,9 @@ spec:
             operator: Equals
             value: UPDATE
       generate:
+        apiVersion: v1
         kind: Event
-        name: "service-update-{{ request.object.metadata.name | lower }}"
+        name: "service-update-{{ request.object.metadata.name | lower }}-{{ request.uid | lower }}"
         namespace: "{{ request.object.metadata.namespace }}"
         synchronize: false
         data:
@@ -29,4 +30,5 @@ spec:
           involvedObject:
             apiVersion: v1
             kind: Service
+            name: "{{ request.object.metadata.name }}"
             namespace: "{{ request.object.metadata.namespace }}"
