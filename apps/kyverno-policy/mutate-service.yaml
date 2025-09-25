@@ -1,0 +1,30 @@
+apiVersion: kyverno.io/v1
+kind: Policy
+metadata:
+  name: mutate-service-to-nodeport
+  annotations:
+    policies.kyverno.io/description: "Changes Service type from ClusterIP to NodePort for labeled Services."
+spec:
+  rules:
+    - name: set-service-to-nodeport
+      match:
+        resources:
+          kinds:
+            - Service
+      # Precondition to ensure the mutation only happens if the Service has the correct label
+      # AND its type is currently ClusterIP.
+      preconditions:
+        all:
+          # Check for the label on the resource being created/updated
+          - key: "{{ request.object.metadata.labels.\"type-to-change\" }}"
+            operator: Equals
+            value: "true"
+          # Check that the current type is ClusterIP
+          - key: "{{ request.object.spec.type }}"
+            operator: Equals
+            value: "ClusterIP"
+      mutate:
+        patchStrategicMerge:
+          spec:
+            # Change the Service type to NodePort
+            type: NodePort
