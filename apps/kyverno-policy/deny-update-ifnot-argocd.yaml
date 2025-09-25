@@ -4,7 +4,7 @@ metadata:
   name: deny-non-argocd-service-changes
 spec:
   validationFailureAction: Enforce
-  # background: false
+  background: false   # 👈 Important: disable background mode
   rules:
     - name: deny-create-or-update-not-from-argocd
       match:
