@@ -12,11 +12,11 @@ spec:
           - resources:
               kinds:
                 - Service
-      preconditions:
-        all:
-          - key: "{{ request.operation }}"
-            operator: Equals
-            value: UPDATE
+      # preconditions:
+      #   all:
+      #     - key: "{{ request.operation }}"
+      #       operator: Equals
+      #       value: UPDATE
       generate:
         apiVersion: v1
         kind: Event
