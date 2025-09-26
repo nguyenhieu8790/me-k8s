@@ -31,4 +31,23 @@ spec:
             apiVersion: v1
             kind: Service
             name: "{{ request.object.metadata.name }}"
-            namespace: "{{ request.object.metadata.namespace }}"
+    #         namespace: "{{ request.object.metadata.namespace }}"
+    # - name: deny-service-update-event
+    #   match:
+    #     any:
+    #       - resources:
+    #           kinds:
+    #             - Service
+    #   preconditions:
+    #     all:
+    #       - key: "{{ request.operation }}"
+    #         operator: Equals
+    #         value: UPDATE           
+    #   validate:
+    #     failureAction: Enforce      
+    #     message: "You must have label `purpose` with value `production` set on all new namespaces."
+    #     # The `pattern` object defines what pattern will be checked in the resource. In this case, it is looking for `metadata.labels` with `purpose=production`.
+    #     pattern:
+    #       metadata:
+    #         labels:
+    #           purpose: production             
