@@ -25,7 +25,7 @@ spec:
         synchronize: false
         data:
           reason: "ServiceUpdated"
-          message: "Service '{{ request.object.metadata.name }}' was updated by '{{ request.userInfo.username }}' using '{{ request.operation }}' action."
+          message: "Service '{{ request }}'"
           type: "Normal"
           involvedObject:
             apiVersion: v1
