@@ -9,6 +9,6 @@ spec:
     version: v4
   ports:
     - protocol: TCP
-      port: 8080 # Port exposed by the service within the cluster
+      port: 8181 # Port exposed by the service within the cluster
       targetPort: 8080 # Port on the pod where the application is listening
       # nodePort: 30080 # Port exposed on each node (must be in the range 30000-32767)

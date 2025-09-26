@@ -3,7 +3,6 @@ kind: ClusterPolicy
 metadata:
   name: log-service-update
 spec:
-  validationFailureAction: Audit
   background: false
   rules:
     - name: log-service-update-event
@@ -32,22 +31,21 @@ spec:
             kind: Service
             name: "{{ request.object.metadata.name }}"
             namespace: "{{ request.object.metadata.namespace }}"
-    # - name: deny-service-update-event
-    #   match:
-    #     any:
-    #       - resources:
-    #           kinds:
-    #             - Service
-    #   preconditions:
-    #     all:
-    #       - key: "{{ request.operation }}"
-    #         operator: Equals
-    #         value: UPDATE           
-    #   validate:
-    #     failureAction: Enforce      
-    #     message: "You must have label `purpose` with value `production` set on all new namespaces."
-    #     # The `pattern` object defines what pattern will be checked in the resource. In this case, it is looking for `metadata.labels` with `purpose=production`.
-    #     pattern:
-    #       metadata:
-    #         labels:
-    #           purpose: production             
+    - name: deny-service-update-event
+      match:
+        any:
+          - resources:
+              kinds:
+                - Service         
+      validate:
+        failureAction: Enforce      
+        message: "Only argocd can create resources"
+        # The `pattern` object defines what pattern will be checked in the resource. In this case, it is looking for `metadata.labels` with `purpose=production`.
+        deny:
+        conditions:
+          all:
+          # Deny the request if the serviceAccountName is NOT 'xxx'
+          # JMESPath is used for complex conditions
+          - key: '{{ request.userInfo.username || `default` }}' # Use 'default' if the field is missing
+            operator: NotEquals
+            value: "system:serviceaccount:argocd:argocd-application-controller"

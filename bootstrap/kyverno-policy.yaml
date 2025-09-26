@@ -19,9 +19,9 @@ spec:
     server: https://kubernetes.default.svc # URL of the target Kubernetes cluster
     namespace: dev # Target namespace within the cluster for deployment
   syncPolicy:
-    automated:
-      prune: true # Automatically prune resources no longer defined in Git
-      selfHeal: true # Automatically sync live state to desired state if drift occurs
+    # automated:
+    #   prune: true # Automatically prune resources no longer defined in Git
+    #   selfHeal: true # Automatically sync live state to desired state if drift occurs
     syncOptions:
       - CreateNamespace=true # Automatically create the target namespace if it doesn't exist
       - ServerSideApply=true 
