@@ -25,7 +25,7 @@ spec:
         synchronize: false
         data:
           reason: "ServiceUpdated"
-          message: "Service '{{ request }}'"
+          message: "Service 002 '{{ request }}'"
           type: "Normal"
           involvedObject:
             apiVersion: v1
