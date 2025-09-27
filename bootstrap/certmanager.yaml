@@ -18,7 +18,7 @@ spec:
     namespace: cert-manager # Target namespace within the cluster for deployment
     helm:
       parameters:
-        - name: application.crds.enabled
+        - name: crds.enabled
           value: true 
   syncPolicy:
     automated:

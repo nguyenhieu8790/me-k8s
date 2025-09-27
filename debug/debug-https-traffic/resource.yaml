@@ -1,0 +1,77 @@
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: selfsigned-issuer
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: ca
+  namespace: cert-manager
+spec:
+  isCA: true
+  commonName: ca
+  secretName: ca-secret
+  duration: 175200h # <-- 20 years
+  privateKey:
+    algorithm: RSA
+    size: 2048
+  issuerRef:
+    name: selfsigned-issuer
+    kind: ClusterIssuer
+    group: cert-manager.io
+---
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: server-issuer
+spec:
+  ca:
+    secretName: ca-secret
+---
+# apiVersion: cert-manager.io/v1
+# kind: Certificate
+# metadata:
+#   name: egress-server-cert
+#   namespace: istio-egress
+# spec:
+#   commonName: egress-server-cert
+#   secretName: egress-server-cert-secret
+#   duration: 8760h # <-- 1 year
+#   privateKey:
+#     algorithm: RSA
+#     size: 2048
+#   dnsNames:
+#     # List all your external domains here
+#     - www.google.com
+#     - baomoi.com
+#   issuerRef:
+#     name: server-issuer
+#     kind: ClusterIssuer
+#     group: cert-manager.io
+# ---
+# apiVersion: networking.istio.io/v1
+# kind: Gateway
+# metadata:
+#   name: gateway
+#   namespace: istio-egress
+# spec:
+#   selector:
+#     app: istio-egressgateway
+#     istio: egressgateway
+#   servers:
+#   - hosts:
+#     - '*' # <- accept requests for any host
+#     port:
+#       # Listen on HTTPS/443
+#       name: https-port
+#       number: 443
+#       protocol: HTTPS
+#     tls:
+#       # TLS-terminate using our created server certificate
+#       # from above, which (along with its private key) will be
+#       # stored in the 'egress-server-cert-secret' secret.
+#       credentialName: egress-server-cert-secret
+#       mode: SIMPLE    
