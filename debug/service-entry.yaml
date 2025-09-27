@@ -1,0 +1,53 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: ServiceEntry
+metadata:
+  name: google
+spec:
+  hosts:
+  - www.google.com
+  ports:
+  - number: 443
+    name: https
+    protocol: HTTPS
+  resolution: DNS
+  location: MESH_EXTERNAL
+---
+apiVersion: networking.istio.io/v1
+kind: DestinationRule
+metadata:
+  name: google
+spec:
+  host: www.google.com
+  trafficPolicy:
+    portLevelSettings:
+    - port:
+        number: 80
+      tls:
+        mode: SIMPLE
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: ServiceEntry
+metadata:
+  name: baomoi
+spec:
+  hosts:
+  - www.baomoi.com
+  ports:
+  - number: 443
+    name: https
+    protocol: HTTPS
+  resolution: DNS
+  location: MESH_EXTERNAL
+---
+apiVersion: networking.istio.io/v1
+kind: DestinationRule
+metadata:
+  name: baomoi
+spec:
+  host: www.baomoi.com
+  trafficPolicy:
+    portLevelSettings:
+    - port:
+        number: 80
+      tls:
+        mode: SIMPLE          
