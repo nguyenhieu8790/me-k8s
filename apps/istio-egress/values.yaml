@@ -3,7 +3,7 @@ application:
   # For instance, instead of `--set _internal_defaults_do_not_set.foo=bar``, just set `--set foo=bar`.
   _internal_defaults_do_not_set:
     # Name allows overriding the release name. Generally this should not be set
-    name: "istio-me-egress"
+    name: ""
     # revision declares which revision this gateway is a part of
     revision: ""
 
@@ -114,7 +114,7 @@ application:
     labels:
       # By default, don't enroll gateways into the ambient dataplane
       "istio.io/dataplane-mode": none
-      "gw-type": "istio-egress"
+      "gw-type": "istio-ingress"
 
     # Annotations to apply to all resources
     annotations: {}
