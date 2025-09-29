@@ -31,47 +31,102 @@ spec:
   ca:
     secretName: ca-secret
 ---
-# apiVersion: cert-manager.io/v1
-# kind: Certificate
-# metadata:
-#   name: egress-server-cert
-#   namespace: istio-egress
-# spec:
-#   commonName: egress-server-cert
-#   secretName: egress-server-cert-secret
-#   duration: 8760h # <-- 1 year
-#   privateKey:
-#     algorithm: RSA
-#     size: 2048
-#   dnsNames:
-#     # List all your external domains here
-#     - www.google.com
-#     - baomoi.com
-#   issuerRef:
-#     name: server-issuer
-#     kind: ClusterIssuer
-#     group: cert-manager.io
-# ---
-# apiVersion: networking.istio.io/v1
-# kind: Gateway
-# metadata:
-#   name: gateway
-#   namespace: istio-egress
-# spec:
-#   selector:
-#     app: istio-egressgateway
-#     istio: egressgateway
-#   servers:
-#   - hosts:
-#     - '*' # <- accept requests for any host
-#     port:
-#       # Listen on HTTPS/443
-#       name: https-port
-#       number: 443
-#       protocol: HTTPS
-#     tls:
-#       # TLS-terminate using our created server certificate
-#       # from above, which (along with its private key) will be
-#       # stored in the 'egress-server-cert-secret' secret.
-#       credentialName: egress-server-cert-secret
-#       mode: SIMPLE    
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: egress-server-cert
+  namespace: istio-egress
+spec:
+  commonName: egress-server-cert
+  secretName: egress-server-cert-secret
+  duration: 8760h # <-- 1 year
+  privateKey:
+    algorithm: RSA
+    size: 2048
+  dnsNames:
+    # List all your external domains here
+    - www.google.com
+    - baomoi.com
+    - edition.cnn.com
+  issuerRef:
+    name: server-issuer
+    kind: ClusterIssuer
+    group: cert-manager.io
+---
+apiVersion: networking.istio.io/v1
+kind: Gateway
+metadata:
+  name: gateway
+  namespace: istio-egress
+spec:
+  selector:
+    app: istio-egress
+  servers:
+  - hosts:
+    - '*' # <- accept requests for any host
+    port:
+      # Listen on HTTPS/443
+      name: https-port
+      number: 443
+      protocol: HTTPS
+    tls:
+      # TLS-terminate using our created server certificate
+      # from above, which (along with its private key) will be
+      # stored in the 'egress-server-cert-secret' secret.
+      credentialName: egress-server-cert-secret
+      mode: SIMPLE
+---
+apiVersion: trust.cert-manager.io/v1alpha1
+kind: Bundle
+metadata:
+  name: ca-bundle
+spec:
+  sources:
+    - secret:
+        name: ca-secret
+        key: "tls.crt"
+    - useDefaultCAs: true
+  target:
+    configMap:
+      key: "trust-bundle.crt"
+    additionalFormats:
+      pkcs12:
+        key: "bundle.p12"
+        password: changeit
+---
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: edition.cnn.com
+  namespace: default
+spec:
+  hosts:
+  - edition.cnn.com
+  # HTTPS/TLS requests are directed to the
+  # Egress Gateway for TLS-termination
+  tls:
+  - match:
+    - port: 443
+      sniHosts:
+      - edition.cnn.com
+    route:
+    - destination:
+        host: istio-egress.istio-egress.svc.cluster.local
+---
+apiVersion: networking.istio.io/v1
+kind: DestinationRule
+metadata:
+  name: edition.cnn.com
+  # namespace: istio-system
+spec:
+  host: edition.cnn.com
+  trafficPolicy:
+    portLevelSettings:
+    - port:
+        number: 80
+      tls:
+        mode: SIMPLE
+    - port:
+        number: 443
+      tls:
+        mode: SIMPLE                

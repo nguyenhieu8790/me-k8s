@@ -1,0 +1,81 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: egress-debugger-1
+  namespace: debug-1
+  labels:
+    app: egress-debugger-1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: egress-debugger-1
+  template:
+    metadata:
+      labels:
+        app: egress-debugger-1
+      annotations:
+        sidecar.istio.io/inject: "true"
+        # sidecar.istio.io/logLevel: "debug"
+    spec:
+      containers:
+        - name: curl
+          image: alpine:latest
+          command: ["sleep", "3600"]
+          volumeMounts:
+          - name: trust-bundle
+            mountPath: /root/ca-certificates
+            readOnly: true          
+      volumes:
+      - name: trust-bundle
+        configMap:
+          name: ca-bundle         # 👈 must match your Bundle’s target ConfigMap name
+          items:
+          - key: trust-bundle.crt # 👈 from Bundle spec.target.configMap.key
+            path: trust-bundle.crt
+---
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: echo-server
+  namespace: debug-1
+spec:
+  hosts:
+  - echo-server
+  http:
+  - route:
+    - destination:
+        host: echo-server.dev.svc.cluster.local
+        port:
+          number: 8080
+
+---
+apiVersion: networking.istio.io/v1
+kind: DestinationRule
+metadata:
+  name: echo-server
+  namespace: debug-1
+spec:
+  host: echo-server.dev.svc.cluster.local
+  subsets:
+  - name: v1
+    labels:
+      version: v1
+  - name: v2
+    labels:
+      version: v2
+# ---
+# apiVersion: networking.istio.io/v1beta1
+# kind: ServiceEntry
+# metadata:
+#   name: edition-cnn
+#   namespace: debug-1
+# spec:
+#   hosts:
+#   - edition.cnn.com
+#   location: MESH_EXTERNAL
+#   ports:
+#   - number: 443
+#     name: tls
+#     protocol: TLS
+#   resolution: DNS        

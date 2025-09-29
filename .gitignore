@@ -1,5 +1,7 @@
 **/*.tgz
+**/*.tar.gz
 **/base
 **/istiod
 **/gateway
+**/istio-1.27.1
 tmp

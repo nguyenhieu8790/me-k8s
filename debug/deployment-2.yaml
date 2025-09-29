@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: egress-debugger-2
+  namespace: debug-2
+  labels:
+    app: egress-debugger-2
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: egress-debugger-2
+  template:
+    metadata:
+      labels:
+        app: egress-debugger-2
+      annotations:
+        sidecar.istio.io/inject: "true"
+        # sidecar.istio.io/logLevel: "debug"
+    spec:
+      containers:
+        - name: curl
+          image: alpine:latest
+          command: ["sleep", "3600"]
+          volumeMounts:
+          - name: trust-bundle
+            mountPath: /root/ca-certificates
+            readOnly: true          
+      volumes:
+      - name: trust-bundle
+        configMap:
+          name: ca-bundle         # 👈 must match your Bundle’s target ConfigMap name
+          items:
+          - key: trust-bundle.crt # 👈 from Bundle spec.target.configMap.key
+            path: trust-bundle.crt          
