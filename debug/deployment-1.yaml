@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: egress-debugger-1
-  namespace: debug-1
+  namespace: debug
   labels:
     app: egress-debugger-1
 spec:
@@ -22,39 +22,100 @@ spec:
         - name: curl
           image: alpine:latest
           command: ["sleep", "3600"]
-          volumeMounts:
-          - name: trust-bundle
-            mountPath: /root/ca-certificates
-            readOnly: true          
-      volumes:
-      - name: trust-bundle
-        configMap:
-          name: ca-bundle         # 👈 must match your Bundle’s target ConfigMap name
-          items:
-          - key: trust-bundle.crt # 👈 from Bundle spec.target.configMap.key
-            path: trust-bundle.crt
+          # volumeMounts:
+          # - name: trust-bundle
+          #   mountPath: /root/ca-certificates
+          #   readOnly: true          
+      # volumes:
+      # - name: trust-bundle
+      #   configMap:
+      #     name: ca-bundle         # 👈 must match your Bundle’s target ConfigMap name
+      #     items:
+      #     - key: trust-bundle.crt # 👈 from Bundle spec.target.configMap.key
+      #       path: trust-bundle.crt
+# ---
+# apiVersion: networking.istio.io/v1
+# kind: Gateway
+# metadata:
+#   name: httpbin-gateway
+#   namespace: debug
+# spec:
+#   # The selector matches the ingress gateway pod labels.
+#   # If you installed Istio using Helm following the standard documentation, this would be "istio=ingress"
+#   selector:
+#     app: istio-ingressgateway
+#   servers:
+#   - port:
+#       number: 8080
+#       name: http
+#       protocol: HTTP
+#     hosts:
+#     - "httpbin.example.com"
+# ---
+# apiVersion: networking.istio.io/v1
+# kind: VirtualService
+# metadata:
+#   name: httpbin
+#   namespace: debug
+# spec:
+#   hosts:
+#   - "httpbin.example.com"
+#   gateways:
+#   - httpbin-gateway
+#   http:
+#   - match:
+#     - uri:
+#         prefix: /status
+#     - uri:
+#         prefix: /delay
+#     route:
+#     - destination:
+#         port:
+#           number: 8080
+#         host: echo-server.dev.svc.cluster.local
+#         subset: v2
+# ---        
+# apiVersion: networking.istio.io/v1
+# kind: DestinationRule
+# metadata:
+#   name: echo-server
+#   namespace: dev
+# spec:
+#   host: echo-server.dev.svc.cluster.local
+#   subsets:
+#   - name: v1
+#     labels:
+#       version: v1
+#   - name: v2
+#     labels:
+#       version: v2
 ---
-apiVersion: networking.istio.io/v1beta1
+apiVersion: networking.istio.io/v1
 kind: VirtualService
 metadata:
-  name: echo-server
-  namespace: debug-1
+  name: httpbin
+  namespace: debug
 spec:
   hosts:
-  - echo-server
+  - echo-server.dev.svc.cluster.local
   http:
-  - route:
+  - match:
+    - uri:
+        prefix: /status
+    - uri:
+        prefix: /delay
+    route:
     - destination:
-        host: echo-server.dev.svc.cluster.local
         port:
           number: 8080
-
----
+        host: echo-server.dev.svc.cluster.local
+        subset: v1
+---        
 apiVersion: networking.istio.io/v1
 kind: DestinationRule
 metadata:
   name: echo-server
-  namespace: debug-1
+  namespace: dev
 spec:
   host: echo-server.dev.svc.cluster.local
   subsets:
@@ -64,18 +125,3 @@ spec:
   - name: v2
     labels:
       version: v2
-# ---
-# apiVersion: networking.istio.io/v1beta1
-# kind: ServiceEntry
-# metadata:
-#   name: edition-cnn
-#   namespace: debug-1
-# spec:
-#   hosts:
-#   - edition.cnn.com
-#   location: MESH_EXTERNAL
-#   ports:
-#   - number: 443
-#     name: tls
-#     protocol: TLS
-#   resolution: DNS        
