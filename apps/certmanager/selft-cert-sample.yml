@@ -1,0 +1,200 @@
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: selfsigned-issuer
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: my-selfsigned-ca
+  namespace: cert-manager
+spec:
+  isCA: true
+  commonName: my-selfsigned-ca # deprecated but still requires in iOS environment
+  secretName: root-secret
+  subject: # needed later for local trust store
+    organizations:
+      - example.com
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+  issuerRef:
+    name: selfsigned-issuer
+    kind: ClusterIssuer
+    group: cert-manager.io
+---
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: my-ca-issuer
+spec:
+  ca:
+    secretName: root-secret
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: sandbox    
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: curl-certs
+  namespace: sandbox
+spec:
+  secretName: curl-certs
+  dnsNames:
+    - app.meme.com
+    - localhost
+  ipAddresses:
+    - 127.0.0.1
+    - ::1
+  privateKey:
+    algorithm: RSA
+    encoding: PKCS8
+    size: 2048
+  issuerRef:
+    name: my-ca-issuer
+    kind: ClusterIssuer
+    group: cert-manager.io
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: alpine
+  namespace: sandbox
+  labels:
+    app: alpine
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: alpine
+  template:
+    metadata:
+      labels:
+        app: alpine
+      # annotations:
+      #   sidecar.istio.io/inject: "true"
+        # sidecar.istio.io/logLevel: "debug"
+    spec:
+      containers:
+        - name: curl
+          image: alpine:latest
+          command: ["sleep", "3600"]
+          volumeMounts:
+          - mountPath: "/root/ca.crt"
+            subPath: "ca.crt"
+            name: "certificates"
+      volumes:
+      - name: "certificates"
+        secret:
+          secretName: "curl-certs"
+          items:
+            - key: "ca.crt"
+              path: "ca.crt"
+---
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-https-conf
+  namespace: sandbox
+data:
+  default.conf: |
+    # Redirect HTTP -> HTTPS
+    server {
+      listen 80;
+      server_name app.meme.com;
+      return 301 https://$host$request_uri;
+    }
+
+    # HTTPS server
+    server {
+      listen 443 ssl;
+      server_name app.meme.com;
+
+      # TLS cert and key from Secret mounted at /etc/tls
+      ssl_certificate     /etc/tls/tls.crt;
+      ssl_certificate_key /etc/tls/tls.key;
+
+      # Reasonable TLS settings
+      # ssl_protocols TLSv1.2 TLSv1.3;
+      # ssl_ciphers HIGH:!aNULL:!MD5;
+      # ssl_prefer_server_ciphers on;
+
+      # Basic static serving (adjust as needed)
+      location / {
+        root /usr/share/nginx/html;
+        index index.html;
+      }
+    }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-https
+  namespace: sandbox
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx-https
+  template:
+    metadata:
+      labels:
+        app: nginx-https
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:1.27-alpine
+          ports:
+            - containerPort: 80
+            - containerPort: 443
+          volumeMounts:
+            - name: tls-secret
+              mountPath: /etc/tls
+              readOnly: true
+            - name: nginx-conf
+              mountPath: /etc/nginx/conf.d/default.conf
+              subPath: default.conf
+          # readinessProbe:
+          #   httpGet:
+          #     path: /
+          #     port: 443
+          #     scheme: HTTPS
+          #   initialDelaySeconds: 5
+          #   periodSeconds: 10
+          # livenessProbe:
+          #   httpGet:
+          #     path: /
+          #     port: 443
+          #     scheme: HTTPS
+          #   initialDelaySeconds: 10
+          #   periodSeconds: 20
+      volumes:
+        - name: tls-secret
+          secret:
+            secretName: curl-certs           
+        - name: nginx-conf
+          configMap:
+            name: nginx-https-conf               
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-https
+  namespace: sandbox
+spec:
+  selector:
+    app: nginx-https
+  # type: LoadBalancer  # change to NodePort or ClusterIP if preferred
+  ports:
+    - name: https
+      port: 443
+      targetPort: 443
+    - name: http
+      port: 80
+      targetPort: 80
